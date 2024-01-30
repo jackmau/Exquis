@@ -1,4 +1,4 @@
-Here's a few simple Python programs to control lights on the Exquis. They're controlled by MIDI sysex commands of the form:
+**Here's a few simple Python programs to control lights on the Exquis. They're controlled by MIDI sysex commands of the form:
 
 "F0 00 21 7E 03 <keynum> <R> <G> <B> F7"
 
@@ -16,3 +16,4 @@ This turns all lights off. Other scripts turn all lights green, and animate rows
 If this doesn't work, try running "py listports.py" to find the name of the device for your Exquis and edit the script in Notepad to change it from "Exquis 1" to whatever the value is. (Eg perhaps "Exquis 2".)
 
 (Disclaimer: I only dabble in programming/github.)
+**
