@@ -19,4 +19,9 @@ This turns all lights off. Other scripts turn all lights green, and animate rows
 
 If this doesn't work, try running "py listports.py" to find the name of the device for your Exquis and edit the script in Notepad to change it from "Exquis 1" to whatever the value is. (Eg perhaps "Exquis 2".)
 
+Demo:
+
+https://youtu.be/MVPomWVR_68
+
+
 (Disclaimer: I only dabble in programming/github.)
