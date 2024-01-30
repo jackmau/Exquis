@@ -11,7 +11,7 @@ https://www.python.org/downloads/
 
 Open a command prompt and enter "pip install python-rtmidi"
    
-Download files from here (you can click on the "raw" button)
+Download Python scripts avove (eg click on the "raw" button).
 
 Navigate to the relevant folder in the command window and run eg "py blank.py".
 
