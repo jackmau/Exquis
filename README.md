@@ -1,6 +1,4 @@
-Here's a few simple Python programs to control lights on the Exquis. They're controlled by MIDI sysex commands of the form:
-
-F0 00 21 7E 03 <keynum> <R> <G> <B> F7
+Here's a few simple Python programs to control lights on the Exquis. (They're controlled by MIDI sysex commands.)
 
 Install Python from here:
 https://www.python.org/downloads/
