@@ -23,7 +23,7 @@ Demo:
 
 https://youtu.be/MVPomWVR_68
 
-(The method for discovering this was to install a virtual MIDI port, loopMIDI, on Windows, point the App at it, and use utilities like Bome/MidiOx to display the sysex messages when changing scales.)
+(The method for discovering this was to install a virtual MIDI port, loopMIDI, on Windows, point the App at it, and use utilities like Bome/MidiOx to display the sysex messages when changing scales while passing them onto the Exquis.)
 
 
 (Disclaimer: I only dabble in programming/github.)
