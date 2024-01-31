@@ -9,7 +9,7 @@ The keys are numbered from 0 at the lower left to 60 at the top right, running a
 Install Python from here:
 https://www.python.org/downloads/
 
-Open a command prompt and enter "pip install python-rtmidi"
+Open a command prompt and enter "pip install python-rtmidi".
    
 Download Python scripts above (eg click on the "raw" button).
 
