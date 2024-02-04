@@ -4,7 +4,7 @@ They're controlled by MIDI sysex commands of the form:
 
 F0 00 21 7E 03 (keynum) (R) (G) (B) F7
 
-The keys are numbered from 0 at the lower left to 60 at the top right, running across the rows.
+The keys are numbered from 0 at the lower left to 60 at the top right, running across the rows. The standard scale colours are 00 00 00 (blank), 38 1D 41, and 7F 5F 3F.
 
 Install Python from here:
 https://www.python.org/downloads/
