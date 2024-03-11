@@ -1,28 +1,53 @@
-Here's a few simple Python programs to control lights on the Exquis.
+# Intuitive Instruments Exquis Quick Layout Programmer
 
-They're controlled by MIDI sysex commands of the form:
+Thanks to chatGPT handling of OOP, threading and UI stuff, I have a working python script with a very basic fronted for reprogramming lights and notes layouts in 
 
-F0 00 21 7E 03 (keynum) (R) (G) (B) F7
+## Requirements
+- Exquis updated to firmare 1.1.
+- Python 3.8+
+- The following python libraries:
+	- python-rtmidi
+	- tkinter
+	- Pillow
 
-The keys are numbered from 0 at the lower left to 60 at the top right, running across the rows. The standard scale colours are 00 00 00 (blank), 38 1D 41, and 7F 5F 3F.
+## User Guide
 
-Install Python from here:
-https://www.python.org/downloads/
+Currently the app is very limited, as my Python programming skills.
+You can just select a layout (which is a preloaded picture) and then send it to the device by pressing the `start midi` button.
+Once you press the `stop midi` button, you should see all the lights turned off.
+ 
+Note that currently you need te define the name of your device in the application.
 
-Open a command prompt and enter "pip install python-rtmidi".
-   
-Download Python scripts above (eg click on the "raw" button).
+Next steps I am thinking to include:
+- rationalisation of the code that generate the notes which is very messy
+- possibility to choose colour template
+- more pre built templates,
+- possibilty to select the device directly in the app
 
-Navigate to the relevant folder in the command window and run eg "py blank.py".
+Then i am thinking to create an "advanced" release with:
+- hex template generated directly in python and not as a static picture
+- no pre-built templates, but custom templates using a set of arguments
+ 
+Note that intuitive instruments is likely to come up with something slightly more sophisticated in the future, so don't ge
 
-This turns all lights off. Other scripts turn all lights green, and animate rows and columns.
+## Sysex commands used in the script
 
-If this doesn't work, try running "py listports.py" to find the name of the device for your Exquis and edit the script in Notepad to change it from "Exquis 1" to whatever the value is. (Eg perhaps "Exquis 2".)
+There are 3 main sysex messages used in the script:
 
-Demo:
+	1. F0 00 21 7E F7, every 400 ms, to let the device know that we are holding onto it very dearly and we want to be in control
+	2. F0 00 21 7E 03 (keynum) (R) (G) (B) F7, for notes colours
+	3. F0 00 21 7E 04 (keynum) (NoteNumber) F7, for midi notes numbers
 
-https://youtu.be/MVPomWVR_68
+If you are curious to know, other sysex messages supported include:
 
-(The method for discovering this was to install a virtual MIDI port, loopMIDI, on Windows, point the App at it, and use utilities like Bome/MidiOx to display the sysex messages when changing scales while passing them onto the Exquis. Kudos to Intuitive Instruments for implementing it in such a neat and approachable way.) 
 
-(Disclaimer: I only dabble in programming/github.)
+List fetched by post by Serguei on the official Intuitive Instruments Discord.
+
+| **Important note**: the current messages are working in v 1.1, but are not officialy supported and may change in the future 
+
+The keys are numbered from 0 at the lower left to 60 at the top right, running across the rows.
+The standard scale colours are 00 00 00 (blank), 38 1D 41, and 7F 5F 3F.
+From my experience (but it may be exquis) colours higher than 79 (in binary, which corresponds to 128) don't seem to get sent on G and B.
+This is why I included an adjustment to rescale colours
+
+## Acknowledgments
