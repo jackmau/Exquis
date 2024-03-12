@@ -8,12 +8,13 @@ Thanks to chatGPT handling of OOP, threading and UI stuff, I have a working pyth
 - The following python libraries:
 	- python-rtmidi
 	- tkinter
-	- Pillow
+	- matplotlib
+	- numpy
 
 ## User Guide
 
 Currently the app is very limited, as my Python programming skills.
-You can just select a layout (which is a preloaded picture) and then send it to the device by pressing the `start midi` button.
+You can just select a layout (which is a preloaded template at this stage) and then send it to the device by pressing the `start midi` button.
 Once you press the `stop midi` button, you should see all the lights turned off.
  
 Currently you need to define the name of your device in the application.

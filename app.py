@@ -2,7 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 import time
 import rtmidi
-from PIL import Image, ImageTk
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import numpy as np
 import threading
 
 desired_device_name = 'Exquis 0'
@@ -59,6 +61,51 @@ def note_colours(notes, cs, adj = True):
         cs = [[round(cs[y][x] *79/255) for x in range(3)] for y in range(len(cs1))]
     return [[cs[x % 12][y] if x > 0 else 0 for x in notes] for y in range(3)]
 
+def note_number_to_name(note_number):
+    """Convert MIDI note number to note name with sharps and flats."""
+    if note_number == 0:
+        return f""
+    else:
+        note_names_sharps = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+        octave = (note_number - 60) // 12
+        note_name = note_names_sharps[note_number % 12]
+    return f"{note_name}{octave + 4}"
+
+def hexagon(ax, center, size, color, label, fontsize):
+    """Draw a hexagon on the given axes."""
+    angle = np.linspace(0, 2*np.pi, 7)
+    x = center[0] + size * np.cos(angle)
+    y = center[1] + size * np.sin(angle)
+    ax.fill(x, y, color=color, edgecolor='k')
+    if sum(color) > 1:
+        tx_color = 'black'
+    else:
+        tx_color = 'white'
+    ax.text(center[0], center[1], label, ha='center', va='center', color=tx_color, fontsize=fontsize)
+
+def create_hexagonal_keyboard(ax, notes, r, g, b):
+    """Create an image of a hexagonal keyboard."""
+
+    column_width = 2 * np.cos(np.pi / 12)  # Width of a hexagon column
+    row_height = 1  # Height of a hexagon row
+    size = 0.6  # Size of hexagons
+    fontsize = 14  # Font size of note labels
+
+    for col in range(11):
+        if col % 2 == 0:
+            for row in range(6):
+                index = (col+1) * 5 - row + round(col/2)
+                center = ((col-1) * column_width/2, row * row_height)
+                hexagon(ax, center, size=size, color=(r[index]/80, g[index]/80, b[index]/80), label=notes[index], fontsize=fontsize)
+        else:
+            for row in range(5):
+                index = (col+1) * 5 - row + round((col-1)/2)
+                center = ((col-1)  * column_width/2, row * row_height + row_height / 2)
+                hexagon(ax, center, size=size, color=(r[index]/80, g[index]/80, b[index]/80), label=notes[index], fontsize=fontsize)
+
+    ax.set_aspect('equal')
+    ax.axis('off')
+
 # Classes definiton, thanks to chatGPT!
 
 class MidiSender:
@@ -83,12 +130,9 @@ class MidiApp:
         self.root = root
         self.root.title("MIDI Sender")
 
-
-        self.images = [
-            {"path": "img/Vertical Split 4-6.PNG", "name": "Vertical Split 6-4"},
-            {"path": "img/Diagonal Vertical Split.PNG", "name": "Diagonal Vertical Split"},
-            {"path": "img/Horizontal Split Asymmetric.PNG", "name": "Horizontal Split Asymmetric"}
-        ]
+        self.images = ["Vertical Split 6-4",
+                       "Diagonal Vertical Split",
+                       "Horizontal Split Asymmetric"]
 
         self.selected_image_index = tk.StringVar()
         self.selected_image_index.set("0")
@@ -97,17 +141,20 @@ class MidiApp:
         self.create_gui()
 
     def create_gui(self):
+
+        self.fig, self.ax = plt.subplots(figsize=(12, 7))
+        self.ax.axis('off')
         # Image display
         self.image_label = ttk.Label(self.root, text="Choose an image:")
         self.image_label.pack()
 
-        self.image_combo = ttk.Combobox(self.root, values=[img["name"] for img in self.images], textvariable=self.selected_image_index)
+        self.image_combo = ttk.Combobox(self.root, values=self.images, textvariable=self.selected_image_index)
         self.image_combo.pack()
         self.image_combo.bind("<<ComboboxSelected>>", self.show_selected_image)
 
-        self.canvas = tk.Canvas(self.root, width=1200, height=700)
-        self.canvas.pack()
-        
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
+        self.canvas_widget = self.canvas.get_tk_widget()
+        self.canvas_widget.pack()
 
         # MIDI buttons
         self.start_button = ttk.Button(self.root, text="Start MIDI", command=self.start_midi)
@@ -117,12 +164,19 @@ class MidiApp:
         self.stop_button.pack()
 
     def show_selected_image(self, event):
-        selected_image_path = self.images[self.image_combo.current()]["path"]
-        image = Image.open(selected_image_path)
-        photo = ImageTk.PhotoImage(image)
-        self.canvas.create_image(0, 0, anchor=tk.NW, image=photo)
-        self.canvas.image = photo  # Keep a reference to avoid garbage collectio
-
+        self.ax.clear()
+        if self.image_combo.current() == 0:
+            self.notes = layout_vertical(36, [[3,2],[3,3]], [1,1], [9,-9], [5,5], 3*12+3)
+        elif self.image_combo.current() == 1:
+            self.notes = layout_vertical(30, [[3,3],[3,2]], [5,5], [3,-3], [4,1], 2*12+8, [2,1,0])
+        else:
+            self.notes = layout_horizontal(34, [2,1], [4,-7], [3,-3], 5*12-4, 5)
+        self.colours = note_colours(self.notes, axis_cs)
+        r,g,b = self.colours
+        notes = [note_number_to_name(n) for n in self.notes]
+        create_hexagonal_keyboard(self.ax, notes, r, g, b)
+        self.canvas.draw_idle()
+        
     def start_midi(self):
 
         midi_out = rtmidi.MidiOut()
@@ -137,14 +191,8 @@ class MidiApp:
         self.midi_thread = threading.Thread(target=self.midi_sender.start_sending_midi)
         self.midi_thread.start()
         time.sleep(0.8)
-        selected_image_index = self.image_combo.current()
-        if selected_image_index == 0:
-            notes = layout_vertical(24, [[3,2],[3,3]], [1,1], [6,-6], [5,-5], 3*12+3)
-        elif selected_image_index == 1:
-            notes = layout_vertical(30, [[3,3],[3,2]], [5,5], [3,-3], [4,1], 2*12+8, [2,1,0])
-        else:
-            notes = layout_horizontal(34, [2,1], [4,-7], [3,-3], 5*12-4, 5)
-        r,g,b = note_colours(test, axis_cs)    
+        r,g,b = self.colours
+        notes = self.notes
         for k in range(61):
             color_sysex = [0xF0, 0x00, 0x21, 0x7E, 0x03, k, r[k], g[k], b[k], 0xF7]
             note_sysex = [0xF0, 0x00, 0x21, 0x7E, 0x04, k, notes[k], 0xF7]
