@@ -7,6 +7,19 @@ import threading
 
 desired_device_name = 'Exquis 0'
 
+axis_cs = [[142,244,251],	
+	   [ 64, 64, 64],
+	   [200,200,200],
+	   [ 64, 64, 64],
+	   [200,200,200],
+	   [200,200,200],
+ 	   [ 16, 32,128],
+	   [200,200,200],
+	   [ 64, 64, 64],
+	   [200,200,200],
+	   [ 64, 64, 64],
+	   [200,200,200]]
+
 cs1 = [[150,113,23],
        [31,206,203],
        [255,0,127],
@@ -32,18 +45,21 @@ cs2 = [[255,253,208],
        [0,112,255],
        [227,218,201]]
 
-rr = 79/255
+# Layout function defintions
 
-def HarmonicTable(st_note, jump, cols_lens, row_len, int_y, int_xz,cs1,cs2):
-    col, notes = zip(*[(z,st_note + jump*z + x * int_y[z] + q + int_xz[y]) for q in range(row_len) for y in range(2) for z in range(2) for x in range(cols_lens[y][z])][:-sum(cols_lens[1])])
-    return [notes, [list(zip(cs1,cs2))[notes[x] % 12][col[x]] for x in range(len(notes))]]
+def layout_vertical(st_note, split_structure, x_step, y_step, z_step, jump = 0, excl = [-1,-1,-1]):
+    return [(st_note + jump*z + x*y_step[z] + q*x_step[z] + y*z_step[z]) if not(x == excl[0] and y ==excl[1] and z ==excl[2]) else 0 for q in range(6) for y in range(2) for z in range(2) for x in range(split_structure[z][y])][:-sum(split_structure[x][1] for x in range(2))]
 
-def HarmonicTableHorizontal(st_note, jump, cols_lens, row_len, int_y, int_z, cs1, cs2):
-    note1, col1 = HarmonicTable(st_note,0, [[cols_lens[0],0],[cols_lens[1],0]], row_len, [int_y[0],0], [0,int_z[0]],cs1,cs2)
-    note1 = note1 + (0,)*5
-    col1 = col1 + [[0]*3]*5
-    note2, col2 = HarmonicTable(st_note+jump,0, [[0,cols_lens[0]],[0,cols_lens[1]]], row_len, [0,int_y[1]], [0,int_z[1]],cs1,cs2)
-    return [note1+note2,col1+col2]
+def layout_horizontal(st_note, x_step, y_step, z_step, jump = 0 , split = -1):
+    s = (split-1)/2-1
+    return [st_note + jump*(q>s) + q*x_step[(q>s)] + x*y_step[(q>s)] + z*z_step[(q>s)] for q in range(6) for z in range(2) for x in range([6,5][z])][:-5]
+
+def note_colours(notes, cs, adj = True):
+    if adj:
+        cs = [[round(cs[y][x] *79/255) for x in range(3)] for y in range(len(cs1))]
+    return [[cs[x % 12][y] if x > 0 else 0 for x in notes] for y in range(3)]
+
+# Classes definiton, thanks to chatGPT!
 
 class MidiSender:
     def __init__(self, midi_out, interval):
@@ -69,9 +85,9 @@ class MidiApp:
 
 
         self.images = [
-            {"path": "img/1.PNG", "name": "Horizontal"},
-            {"path": "img/2.PNG", "name": "Vertical"},
-            {"path": "path_to_image3.jpg", "name": "Image 3"}
+            {"path": "img/Vertical Split 4-6.PNG", "name": "Vertical Split 6-4"},
+            {"path": "img/Diagonal Vertical Split.PNG", "name": "Diagonal Vertical Split"},
+            {"path": "img/Horizontal Split Asymmetric.PNG", "name": "Horizontal Split Asymmetric"}
         ]
 
         self.selected_image_index = tk.StringVar()
@@ -123,12 +139,14 @@ class MidiApp:
         time.sleep(0.8)
         selected_image_index = self.image_combo.current()
         if selected_image_index == 0:
-            notes, colours = HarmonicTable(24,12*4+2, [[3,3],[2,3]], 6, [11,-11], [0,6], cs1,cs2)
+            notes = layout_vertical(24, [[3,2],[3,3]], [1,1], [6,-6], [5,-5], 3*12+3)
+        elif selected_image_index == 1:
+            notes = layout_vertical(30, [[3,3],[3,2]], [5,5], [3,-3], [4,1], 2*12+8, [2,1,0])
         else:
-            notes, colours = HarmonicTableHorizontal(29,12*4+5, [6,5],3,[5,-5],[3,-2],cs1,cs2)
+            notes = layout_horizontal(34, [2,1], [4,-7], [3,-3], 5*12-4, 5)
+        r,g,b = note_colours(test, axis_cs)    
         for k in range(61):
-            color_sysex = [0xF0, 0x00, 0x21, 0x7E, 0x03, k, round(colours[k][0]*rr),
-                           round(colours[k][1]*rr), round(colours[k][2]*rr), 0xF7]
+            color_sysex = [0xF0, 0x00, 0x21, 0x7E, 0x03, k, r[k], g[k], b[k], 0xF7]
             note_sysex = [0xF0, 0x00, 0x21, 0x7E, 0x04, k, notes[k], 0xF7]
             midi_out.send_message(color_sysex)
             midi_out.send_message(note_sysex)
@@ -139,7 +157,6 @@ class MidiApp:
             self.midi_sender.stop_sending_midi()
             self.midi_thread.join()
             self.midi_thread = None
-
     
 
 
