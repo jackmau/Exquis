@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, font
 import time
 import rtmidi
 import matplotlib.pyplot as plt
@@ -7,7 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 import threading
 
-desired_device_name = 'Exquis 0'
+note_names = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 axis_cs = [[142,244,251],	
 	   [ 64, 64, 64],
@@ -66,9 +66,8 @@ def note_number_to_name(note_number):
     if note_number == 0:
         return f""
     else:
-        note_names_sharps = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
         octave = (note_number - 60) // 12
-        note_name = note_names_sharps[note_number % 12]
+        note_name = note_names[note_number % 12]
     return f"{note_name}{octave + 4}"
 
 def hexagon(ax, center, size, color, label, fontsize):
@@ -128,65 +127,140 @@ class MidiSender:
 class MidiApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("MIDI Sender")
+        self.root.title("Exquis Template Editor")
 
         self.images = ["Vertical Split 6-4",
                        "Diagonal Vertical Split",
                        "Horizontal Split Asymmetric"]
 
         self.selected_image_index = tk.StringVar()
-        self.selected_image_index.set("0")
+        self.selected_midi_device = tk.StringVar()
         self.midi_sender = None  # To store the MidiSender instance
         self.midi_thread = None  # To store the reference to the MIDI thread
+        self.midi_out = rtmidi.MidiOut()
+        self.midi_devices = self.midi_out.get_ports()
+        self.split_combos = []
         self.create_gui()
 
     def create_gui(self):
 
-        self.fig, self.ax = plt.subplots(figsize=(12, 7))
+        self.fig, self.ax = plt.subplots(figsize=(11, 6))
         self.ax.axis('off')
-        # Image display
-        self.image_label = ttk.Label(self.root, text="Choose an image:")
-        self.image_label.pack()
+        # Select MIDI Device
+        self.midi_device_label = ttk.Label(self.root, text="Select MIDI Device:")
+        self.midi_device_label.pack()
 
-        self.image_combo = ttk.Combobox(self.root, values=self.images, textvariable=self.selected_image_index)
-        self.image_combo.pack()
-        self.image_combo.bind("<<ComboboxSelected>>", self.show_selected_image)
+        self.midi_device_combo = ttk.Combobox(self.root, values=self.midi_devices, textvariable=self.selected_midi_device)
+        self.midi_device_combo.pack()
+        self.midi_device_combo.bind("<<ComboboxSelected>>", self.open_midi)
+
+        # Create a notebook (tabbed interface)
+        self.notebook = ttk.Notebook(self.root)
+        self.notebook.pack(fill='both', expand=True)
+
+        # Create frames for each option
+        self.frame1 = ttk.Frame(self.notebook)
+        self.frame2 = ttk.Frame(self.notebook)
+
+        # Add frames to the notebook
+        self.notebook.add(self.frame1, text="Main Layer")
+        self.notebook.add(self.frame2, text="Split Layer")
+
+        # Main parameters
+        self.start_note, self.start_octave = tk.IntVar(), tk.IntVar()
+        self.x_step1, self.y_step1, self.z_step1 = tk.IntVar(),tk.IntVar(),tk.IntVar()
+        ## Start Note
+        ttk.Label(self.frame1, text="Start Note:").pack()
+        self.start_note_combo = ttk.Combobox(self.frame1, textvariable=self.start_note, values=note_names)
+        self.start_note_combo.current(0)
+        self.start_note_combo.pack()
+        ## Start Octave
+        ttk.Label(self.frame1, text="Start Octave:").pack()
+        ttk.Spinbox(self.frame1, textvariable=self.start_octave, values=list(range(9))).pack()
+        ## X Step
+        ttk.Label(self.frame1, text="X semitone intervals:").pack()
+        ttk.Spinbox(self.frame1, textvariable=self.x_step1, values=list(range(-11,12))).pack()
+        ## Y Step
+        ttk.Label(self.frame1, text="Y semitone intervals:").pack()
+        ttk.Spinbox(self.frame1, textvariable=self.y_step1, values=list(range(-11,12))).pack()
+        ## Z Step
+        ttk.Label(self.frame1, text="Z semitone intervals:").pack()
+        ttk.Spinbox(self.frame1, textvariable=self.z_step1, values=list(range(-5,6))).pack()
+         
+        # Split parameters
+        split_values = ["No Split","Horizontal","Vertical"]
+        self.split = tk.StringVar()
+        self.split_start_note, self.split_start_octave = tk.IntVar(), tk.IntVar()
+        self.x_step2, self.y_step2, self.z_step2 = tk.IntVar(),tk.IntVar(),tk.IntVar()
+        self.split_column = tk.IntVar(value=13)
+        ## Split Type
+        ttk.Label(self.frame1, text="Start Note:").pack()
+        self.split_combo = ttk.Combobox(self.frame2, textvariable=self.split, values=split_values)
+        self.split_combo.current(0)
+        self.split_combo.pack()
+        ## Split Start Note
+        ttk.Label(self.frame2, text="Start Note:").pack()
+        self.split_start_note_combo = ttk.Combobox(self.frame2, textvariable=self.split_start_note, values=note_names)
+        self.split_start_note_combo.current(0)
+        self.split_start_note_combo.pack()
+        ## Split Start Octave
+        ttk.Label(self.frame2, text="Start Octave:").pack()
+        ttk.Spinbox(self.frame2, textvariable=self.split_start_octave, values=list(range(9))).pack()
+        ## Split X Step
+        ttk.Label(self.frame2, text="X semitone intervals:").pack()
+        ttk.Spinbox(self.frame2, textvariable=self.x_step2, values=list(range(-11,12))).pack()
+        ## Split Y Step
+        ttk.Label(self.frame2, text="Y semitone intervals:").pack()
+        ttk.Spinbox(self.frame2, textvariable=self.y_step2, values=list(range(-11,12))).pack()
+        ## Split Z Step
+        ttk.Label(self.frame2, text="Z semitone intervals:").pack()
+        ttk.Spinbox(self.frame2, textvariable=self.z_step2, values=list(range(-5,6))).pack()
+        ## Add remaining frames according to the type of split
+        self.split_combo.bind("<<ComboboxSelected>>", self.add_split_boxes)
+
+        # Button to execute selected option
+        self.gen_button = ttk.Button(self.root, text="Generate\nTemplate", command=self.generate_image)
+        self.gen_button.pack()
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
         self.canvas_widget = self.canvas.get_tk_widget()
         self.canvas_widget.pack()
 
         # MIDI buttons
-        self.start_button = ttk.Button(self.root, text="Start MIDI", command=self.start_midi)
+        self.start_button = ttk.Button(self.root, text="Send Template", command=self.start_midi)
         self.start_button.pack()
 
-        self.stop_button = ttk.Button(self.root, text="Stop MIDI", command=self.stop_midi)
+        self.stop_button = ttk.Button(self.root, text="Close Connection", command=self.stop_midi)
         self.stop_button.pack()
 
-    def show_selected_image(self, event):
+    def generate_image(self):
         self.ax.clear()
-        if self.image_combo.current() == 0:
+        start_note = self.start_note_combo.current() + 12 * (self.start_octave.get()+1)
+        jump = self.split_start_note_combo.current() + 12 * (self.split_start_octave.get()+1) - start_note
+        x = [self.x_step1.get(), self.x_step2.get()]
+        y = [self.y_step1.get(), self.y_step2.get()]
+        z = [self.z_step1.get(), self.z_step2.get()]
+        if self.split.get() == "Vertical":
             self.notes = layout_vertical(36, [[3,2],[3,3]], [1,1], [9,-9], [5,5], 3*12+3)
-        elif self.image_combo.current() == 1:
-            self.notes = layout_vertical(30, [[3,3],[3,2]], [5,5], [3,-3], [4,1], 2*12+8, [2,1,0])
+        #elif self.image_combo.current() == 1:
+        #    self.notes = layout_vertical(30, [[3,3],[3,2]], [5,5], [3,-3], [4,1], 2*12+8, [2,1,0])
         else:
-            self.notes = layout_horizontal(34, [2,1], [4,-7], [3,-3], 5*12-4, 5)
+            #self.notes = layout_horizontal(34, [2,1], [4,-7], [3,-3], 5*12-4, 5)
+            self.notes = layout_horizontal(start_note, x, y, z, jump, self.split_column.get())
         self.colours = note_colours(self.notes, axis_cs)
         r,g,b = self.colours
         notes = [note_number_to_name(n) for n in self.notes]
         create_hexagonal_keyboard(self.ax, notes, r, g, b)
         self.canvas.draw_idle()
-        
+
+    def open_midi(self, event):
+        try:
+            self.midi_out.open_port(self.selected_midi_device.get())
+            messagebox.showinfo("MIDI connection", f"Successfully opened MIDI output port: {self.selected_midi_device}")
+        except:
+            messagebox.showerror("MIDI COnnection Error", f"Failed to connect to {self.selected_midi_device}")
+
     def start_midi(self):
-
-        midi_out = rtmidi.MidiOut()
-        available_ports = midi_out.get_ports()
-
-        if desired_device_name not in available_ports:
-            raise ValueError(f"MIDI output port '{desired_device_name}' not found.")
-
-        midi_out.open_port(available_ports.index(desired_device_name))
-        print(f"Successfully opened MIDI output port: {desired_device_name}")
         self.midi_sender = MidiSender(midi_out, interval=400)
         self.midi_thread = threading.Thread(target=self.midi_sender.start_sending_midi)
         self.midi_thread.start()
@@ -205,11 +279,25 @@ class MidiApp:
             self.midi_sender.stop_sending_midi()
             self.midi_thread.join()
             self.midi_thread = None
-    
-
+            
+    def add_split_boxes(self, event):
+        [x.destroy() for x in self.split_combos]
+        self.split_combos = []
+        if self.split.get() == "Horizontal":
+            self.split_combos.append(ttk.Label(self.frame2, text="Column Split:"))
+            self.split_combos.append(ttk.Combobox(self.frame2, textvariable=self.split_column, values=list(range(3,8))))
+            [x.pack() for x in self.split_combos]
+        if self.split.get() == "Vertical":    
+            pass
 
 if __name__ == "__main__":
     root = tk.Tk()
+    # Define a new font with a custom size
+    custom_font = ('TkDefaultFont', 14)   # Change the size to your desired value
+    style = ttk.Style()
+    style.configure('.', font=custom_font)
+    # Set the custom font as the default font for all widgets
+    root.option_add("*Font", custom_font)
     app = MidiApp(root)
     root.mainloop()
 
