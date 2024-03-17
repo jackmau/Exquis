@@ -52,9 +52,8 @@ cs2 = [[255,253,208],
 def layout_vertical(st_note, split_structure, x_step, y_step, z_step, jump = 0, excl = [-1,-1,-1]):
     return [(st_note + jump*z + x*y_step[z] + q*x_step[z] + y*z_step[z]) if not(x == excl[0] and y ==excl[1] and z ==excl[2]) else 0 for q in range(6) for y in range(2) for z in range(2) for x in range(split_structure[z][y])][:-sum(split_structure[x][1] for x in range(2))]
 
-def layout_horizontal(st_note, x_step, y_step, z_step, jump = 0 , split = -1):
-    s = (split-1)/2-1
-    return [st_note + jump*(q>s) + q*x_step[(q>s)] + x*y_step[(q>s)] + z*z_step[(q>s)] for q in range(6) for z in range(2) for x in range([6,5][z])][:-5]
+def layout_horizontal(st_note, x_step, y_step, z_step, s = 12):
+    return [st_note[x>s-2] + (x-s*(x>s-2))//2*x_step[(x>s-2)] + y*y_step[(x>s-2)] + (x % 2)*z_step[(x>s-2)] for x in range(11) for y in range([6,5][x % 2])]
 
 def note_colours(notes, cs, adj = True):
     if adj:
@@ -235,8 +234,9 @@ class MidiApp:
 
     def generate_image(self):
         self.ax.clear()
-        start_note = self.start_note_combo.current() + 12 * (self.start_octave.get()+1)
-        jump = self.split_start_note_combo.current() + 12 * (self.split_start_octave.get()+1) - start_note
+        start_note = []
+        start_note.append(self.start_note_combo.current() + 12 * (self.start_octave.get()+1))
+        start_note.append(self.split_start_note_combo.current() + 12 * (self.split_start_octave.get()+1))
         x = [self.x_step1.get(), self.x_step2.get()]
         y = [self.y_step1.get(), self.y_step2.get()]
         z = [self.z_step1.get(), self.z_step2.get()]
@@ -246,7 +246,7 @@ class MidiApp:
         #    self.notes = layout_vertical(30, [[3,3],[3,2]], [5,5], [3,-3], [4,1], 2*12+8, [2,1,0])
         else:
             #self.notes = layout_horizontal(34, [2,1], [4,-7], [3,-3], 5*12-4, 5)
-            self.notes = layout_horizontal(start_note, x, y, z, jump, self.split_column.get())
+            self.notes = layout_horizontal(start_note, x, y, z, self.split_column.get())
         self.colours = note_colours(self.notes, axis_cs)
         r,g,b = self.colours
         notes = [note_number_to_name(n) for n in self.notes]
