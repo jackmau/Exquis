@@ -49,12 +49,15 @@ cs2 = [[255,253,208],
 
 # Layout function defintions
 
-def layout_vertical(st_note, split_structure, x_step, y_step, z_step, jump = 0, excl = [-1,-1,-1]):
-    return [(st_note + jump*z + x*y_step[z] + q*x_step[z] + y*z_step[z]) if not(x == excl[0] and y ==excl[1] and z ==excl[2]) else 0 for q in range(6) for y in range(2) for z in range(2) for x in range(split_structure[z][y])][:-sum(split_structure[x][1] for x in range(2))]
+def layout_vertical(st_note, x_step, y_step, z_step, s):
+    out = [(st_note[z] + x//2*x_step[z] + (x%2)*z_step[z] + y*y_step[z]) for x in range(11) for z in range(2) for y in range([3,s[z % 2]][x % 2])]
+    if sum(s) < 5:
+        [out.insert(x,0) for x in range(8,61,11)]
+    return out
 
 def layout_horizontal(st_note, x_step, y_step, z_step, s = 12):
-    return [st_note[x>s-2] + (x-s*(x>s-2))//2*x_step[(x>s-2)] + y*y_step[(x>s-2)] + (x % 2)*z_step[(x>s-2)] for x in range(11) for y in range([6,5][x % 2])]
-
+    return [st_note[x>s-2] + (x-(s-2)*(x>s-2))//2*x_step[(x>s-2)] + y*y_step[(x>s-2)] + (x % 2)*z_step[(x>s-2)] for x in range(11) for y in range([6,5][x % 2])]
+    
 def note_colours(notes, cs, adj = True):
     if adj:
         cs = [[round(cs[y][x] *79/255) for x in range(3)] for y in range(len(cs1))]
@@ -104,6 +107,12 @@ def create_hexagonal_keyboard(ax, notes, r, g, b):
     ax.set_aspect('equal')
     ax.axis('off')
 
+def quit_tk():
+    # 1) destroys all widgets and closes the main loop
+    root.destroy()
+    # 2) ends the execution of the Python program
+    exit()
+
 # Classes definiton, thanks to chatGPT!
 
 class MidiSender:
@@ -127,11 +136,6 @@ class MidiApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Exquis Template Editor")
-
-        self.images = ["Vertical Split 6-4",
-                       "Diagonal Vertical Split",
-                       "Horizontal Split Asymmetric"]
-
         self.selected_image_index = tk.StringVar()
         self.selected_midi_device = tk.StringVar()
         self.midi_sender = None  # To store the MidiSender instance
@@ -169,22 +173,22 @@ class MidiApp:
         self.start_note, self.start_octave = tk.IntVar(), tk.IntVar()
         self.x_step1, self.y_step1, self.z_step1 = tk.IntVar(),tk.IntVar(),tk.IntVar()
         ## Start Note
-        ttk.Label(self.frame1, text="Start Note:").pack()
+        ttk.Label(self.frame1, text="Start Note:").grid(row=0,column=0,padx=10,pady=5)
         self.start_note_combo = ttk.Combobox(self.frame1, textvariable=self.start_note, values=note_names)
         self.start_note_combo.current(0)
-        self.start_note_combo.pack()
+        self.start_note_combo.grid(row=0,column=1,padx=10,pady=5)
         ## Start Octave
-        ttk.Label(self.frame1, text="Start Octave:").pack()
-        ttk.Spinbox(self.frame1, textvariable=self.start_octave, values=list(range(9))).pack()
+        ttk.Label(self.frame1, text="Start Octave:").grid(row=1,column=0,padx=10,pady=5)
+        ttk.Spinbox(self.frame1, textvariable=self.start_octave, values=list(range(9))).grid(row=1,column=1,padx=10,pady=5)
         ## X Step
-        ttk.Label(self.frame1, text="X semitone intervals:").pack()
-        ttk.Spinbox(self.frame1, textvariable=self.x_step1, values=list(range(-11,12))).pack()
+        ttk.Label(self.frame1, text="X semitone intervals:").grid(row=2,column=0,padx=10,pady=5)
+        ttk.Spinbox(self.frame1, textvariable=self.x_step1, values=list(range(-11,12))).grid(row=2,column=1,padx=10,pady=5)
         ## Y Step
-        ttk.Label(self.frame1, text="Y semitone intervals:").pack()
-        ttk.Spinbox(self.frame1, textvariable=self.y_step1, values=list(range(-11,12))).pack()
+        ttk.Label(self.frame1, text="Y semitone intervals:").grid(row=3,column=0,padx=10,pady=5)
+        ttk.Spinbox(self.frame1, textvariable=self.y_step1, values=list(range(-11,12))).grid(row=3,column=1,padx=10,pady=5)
         ## Z Step
-        ttk.Label(self.frame1, text="Z semitone intervals:").pack()
-        ttk.Spinbox(self.frame1, textvariable=self.z_step1, values=list(range(-5,6))).pack()
+        ttk.Label(self.frame1, text="Z semitone intervals:").grid(row=4,column=0,padx=10,pady=5)
+        ttk.Spinbox(self.frame1, textvariable=self.z_step1, values=list(range(-5,6))).grid(row=4,column=1,padx=10,pady=5)
          
         # Split parameters
         split_values = ["No Split","Horizontal","Vertical"]
@@ -193,27 +197,27 @@ class MidiApp:
         self.x_step2, self.y_step2, self.z_step2 = tk.IntVar(),tk.IntVar(),tk.IntVar()
         self.split_column = tk.IntVar(value=13)
         ## Split Type
-        ttk.Label(self.frame1, text="Start Note:").pack()
+        ttk.Label(self.frame2, text="Split Type:").grid(row=0,column=0,padx=10,pady=5)
         self.split_combo = ttk.Combobox(self.frame2, textvariable=self.split, values=split_values)
         self.split_combo.current(0)
-        self.split_combo.pack()
+        self.split_combo.grid(row=0,column=1,padx=10,pady=5)
         ## Split Start Note
-        ttk.Label(self.frame2, text="Start Note:").pack()
+        ttk.Label(self.frame2, text="Start Note:").grid(row=1,column=0,padx=10,pady=5)
         self.split_start_note_combo = ttk.Combobox(self.frame2, textvariable=self.split_start_note, values=note_names)
         self.split_start_note_combo.current(0)
-        self.split_start_note_combo.pack()
+        self.split_start_note_combo.grid(row=1,column=1,padx=10,pady=5)
         ## Split Start Octave
-        ttk.Label(self.frame2, text="Start Octave:").pack()
-        ttk.Spinbox(self.frame2, textvariable=self.split_start_octave, values=list(range(9))).pack()
+        ttk.Label(self.frame2, text="Start Octave:").grid(row=2,column=0,padx=10,pady=5)
+        ttk.Spinbox(self.frame2, textvariable=self.split_start_octave, values=list(range(9))).grid(row=2,column=1,padx=10,pady=5)
         ## Split X Step
-        ttk.Label(self.frame2, text="X semitone intervals:").pack()
-        ttk.Spinbox(self.frame2, textvariable=self.x_step2, values=list(range(-11,12))).pack()
+        ttk.Label(self.frame2, text="X semitone intervals:").grid(row=3,column=0,padx=10,pady=5)
+        ttk.Spinbox(self.frame2, textvariable=self.x_step2, values=list(range(-11,12))).grid(row=3,column=1,padx=10,pady=5)
         ## Split Y Step
-        ttk.Label(self.frame2, text="Y semitone intervals:").pack()
-        ttk.Spinbox(self.frame2, textvariable=self.y_step2, values=list(range(-11,12))).pack()
+        ttk.Label(self.frame2, text="Y semitone intervals:").grid(row=4,column=0,padx=10,pady=5)
+        ttk.Spinbox(self.frame2, textvariable=self.y_step2, values=list(range(-11,12))).grid(row=4,column=1,padx=10,pady=5)
         ## Split Z Step
-        ttk.Label(self.frame2, text="Z semitone intervals:").pack()
-        ttk.Spinbox(self.frame2, textvariable=self.z_step2, values=list(range(-5,6))).pack()
+        ttk.Label(self.frame2, text="Z semitone intervals:").grid(row=5,column=0,padx=10,pady=5)
+        ttk.Spinbox(self.frame2, textvariable=self.z_step2, values=list(range(-5,6))).grid(row=5,column=1,padx=10,pady=5)
         ## Add remaining frames according to the type of split
         self.split_combo.bind("<<ComboboxSelected>>", self.add_split_boxes)
 
@@ -229,7 +233,7 @@ class MidiApp:
         self.start_button = ttk.Button(self.root, text="Send Template", command=self.start_midi)
         self.start_button.pack()
 
-        self.stop_button = ttk.Button(self.root, text="Close Connection", command=self.stop_midi)
+        self.stop_button = ttk.Button(self.root, text="Close Application", command=self.stop_midi)
         self.stop_button.pack()
 
     def generate_image(self):
@@ -241,11 +245,8 @@ class MidiApp:
         y = [self.y_step1.get(), self.y_step2.get()]
         z = [self.z_step1.get(), self.z_step2.get()]
         if self.split.get() == "Vertical":
-            self.notes = layout_vertical(36, [[3,2],[3,3]], [1,1], [9,-9], [5,5], 3*12+3)
-        #elif self.image_combo.current() == 1:
-        #    self.notes = layout_vertical(30, [[3,3],[3,2]], [5,5], [3,-3], [4,1], 2*12+8, [2,1,0])
+            self.notes = layout_vertical(start_note, x, y, z, [int(k) for k in str(self.split_column.get())])
         else:
-            #self.notes = layout_horizontal(34, [2,1], [4,-7], [3,-3], 5*12-4, 5)
             self.notes = layout_horizontal(start_note, x, y, z, self.split_column.get())
         self.colours = note_colours(self.notes, axis_cs)
         r,g,b = self.colours
@@ -255,13 +256,13 @@ class MidiApp:
 
     def open_midi(self, event):
         try:
-            self.midi_out.open_port(self.selected_midi_device.get())
-            messagebox.showinfo("MIDI connection", f"Successfully opened MIDI output port: {self.selected_midi_device}")
+            self.midi_out.open_port(self.midi_device_combo.current())
+            tk.messagebox.showinfo("MIDI connection", f"Successfully opened MIDI output port: {self.selected_midi_device.get()}")
         except:
-            messagebox.showerror("MIDI COnnection Error", f"Failed to connect to {self.selected_midi_device}")
+            tk.messagebox.showerror("MIDI Connection Error", f"Failed to connect to {self.selected_midi_device}")
 
     def start_midi(self):
-        self.midi_sender = MidiSender(midi_out, interval=400)
+        self.midi_sender = MidiSender(self.midi_out, interval=400)
         self.midi_thread = threading.Thread(target=self.midi_sender.start_sending_midi)
         self.midi_thread.start()
         time.sleep(0.8)
@@ -270,8 +271,8 @@ class MidiApp:
         for k in range(61):
             color_sysex = [0xF0, 0x00, 0x21, 0x7E, 0x03, k, r[k], g[k], b[k], 0xF7]
             note_sysex = [0xF0, 0x00, 0x21, 0x7E, 0x04, k, notes[k], 0xF7]
-            midi_out.send_message(color_sysex)
-            midi_out.send_message(note_sysex)
+            self.midi_out.send_message(color_sysex)
+            self.midi_out.send_message(note_sysex)
 
     def stop_midi(self):
         if self.midi_sender and self.midi_sender.is_running:
@@ -279,16 +280,19 @@ class MidiApp:
             self.midi_sender.stop_sending_midi()
             self.midi_thread.join()
             self.midi_thread = None
+        root.destroy()
+        exit()
             
     def add_split_boxes(self, event):
         [x.destroy() for x in self.split_combos]
         self.split_combos = []
+        self.split_combos.append(ttk.Label(self.frame2, text="Column Split:"))
         if self.split.get() == "Horizontal":
-            self.split_combos.append(ttk.Label(self.frame2, text="Column Split:"))
-            self.split_combos.append(ttk.Combobox(self.frame2, textvariable=self.split_column, values=list(range(3,8))))
-            [x.pack() for x in self.split_combos]
+            splitvalues = list(range(3,10,2))
         if self.split.get() == "Vertical":    
-            pass
+            splitvalues = [32,23,22]
+        self.split_combos.append(ttk.Combobox(self.frame2, textvariable=self.split_column, values=splitvalues))
+        [self.split_combos[x].grid(row=6,column=x,padx=10,pady=5) for x in range(len(self.split_combos))]
 
 if __name__ == "__main__":
     root = tk.Tk()
