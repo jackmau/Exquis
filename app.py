@@ -88,7 +88,7 @@ def create_hexagonal_keyboard(ax, notes, r, g, b):
     """Create an image of a hexagonal keyboard."""
 
     column_width = 2 * np.cos(np.pi / 12)  # Width of a hexagon column
-    row_height = 1  # Height of a hexagon row
+    row_height = 1.1  # Height of a hexagon row
     size = 0.6  # Size of hexagons
     fontsize = 14  # Font size of note labels
 
@@ -103,15 +103,9 @@ def create_hexagonal_keyboard(ax, notes, r, g, b):
                 index = (col+1) * 5 - row + round((col-1)/2)
                 center = ((col-1)  * column_width/2, row * row_height + row_height / 2)
                 hexagon(ax, center, size=size, color=(r[index]/80, g[index]/80, b[index]/80), label=notes[index], fontsize=fontsize)
-
-    ax.set_aspect('equal')
+    
+    ax.set_aspect('auto')
     ax.axis('off')
-
-def quit_tk():
-    # 1) destroys all widgets and closes the main loop
-    root.destroy()
-    # 2) ends the execution of the Python program
-    exit()
 
 # Classes definiton, thanks to chatGPT!
 
@@ -147,19 +141,20 @@ class MidiApp:
 
     def create_gui(self):
 
-        self.fig, self.ax = plt.subplots(figsize=(11, 6))
+        self.fig, self.ax = plt.subplots(figsize=(7, 4.5))
         self.ax.axis('off')
+        self.fig.tight_layout()
         # Select MIDI Device
         self.midi_device_label = ttk.Label(self.root, text="Select MIDI Device:")
-        self.midi_device_label.pack()
+        self.midi_device_label.grid(row=0,column=0,padx=10,pady=5)
 
         self.midi_device_combo = ttk.Combobox(self.root, values=self.midi_devices, textvariable=self.selected_midi_device)
-        self.midi_device_combo.pack()
+        self.midi_device_combo.grid(row=0,column=1,padx=10,pady=5)
         self.midi_device_combo.bind("<<ComboboxSelected>>", self.open_midi)
 
         # Create a notebook (tabbed interface)
         self.notebook = ttk.Notebook(self.root)
-        self.notebook.pack(fill='both', expand=True)
+        self.notebook.grid(row=1,column=0,padx=10,pady=5,columnspan=2)
 
         # Create frames for each option
         self.frame1 = ttk.Frame(self.notebook)
@@ -221,20 +216,19 @@ class MidiApp:
         ## Add remaining frames according to the type of split
         self.split_combo.bind("<<ComboboxSelected>>", self.add_split_boxes)
 
+        self.stop_button = ttk.Button(self.root, text="Close Application", command=self.stop_midi)
+        self.stop_button.grid(row=0,column=2,padx=10,pady=5)
         # Button to execute selected option
         self.gen_button = ttk.Button(self.root, text="Generate\nTemplate", command=self.generate_image)
-        self.gen_button.pack()
-
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
-        self.canvas_widget = self.canvas.get_tk_widget()
-        self.canvas_widget.pack()
-
+        self.gen_button.grid(row=1,column=2,padx=10,pady=5)
         # MIDI buttons
         self.start_button = ttk.Button(self.root, text="Send Template", command=self.start_midi)
-        self.start_button.pack()
+        self.start_button.grid(row=1,column=2,padx=10,pady=5,sticky="S")
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
+        self.canvas_widget = self.canvas.get_tk_widget()
+        self.canvas_widget.grid(row=3,column=0,columnspan=3,padx=10,pady=5)
 
-        self.stop_button = ttk.Button(self.root, text="Close Application", command=self.stop_midi)
-        self.stop_button.pack()
+
 
     def generate_image(self):
         self.ax.clear()
@@ -296,6 +290,8 @@ class MidiApp:
 
 if __name__ == "__main__":
     root = tk.Tk()
+    root.geometry("700x750")
+    root.resizable(0, 0)
     # Define a new font with a custom size
     custom_font = ('TkDefaultFont', 14)   # Change the size to your desired value
     style = ttk.Style()

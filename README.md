@@ -1,4 +1,4 @@
-# Intuitive Instruments Exquis Quick Layout Programmer
+﻿# Intuitive Instruments Exquis Isomorphic Layout Programmer
 
 Thanks to chatGPT handling of OOP, threading and UI stuff, I have a working python script with a very basic fronted for reprogramming lights and notes layouts.
 
@@ -13,15 +13,63 @@ Thanks to chatGPT handling of OOP, threading and UI stuff, I have a working pyth
 
 ## User Guide
 
-Currently the app is very limited, as my Python programming skills.
-You can just select a layout (which is a preloaded template at this stage) and then send it to the device by pressing the `start midi` button.
-Once you press the `stop midi` button, you should see all the lights turned off.
- 
-Currently you need to define the name of your device in the application.
- 
-Intuitive Instruments is likely to come up with something slightly more sophisticated in the future, so don't get too excited about this, it is likely to become abandonware soon as I am only developing this for my personal needs.
+Currently the app is very limited, as my Python programming skills. Its main aim is to create custom isomorphic layout for the Exquis.
+App has been tested in Arch Linux and Windows 10.
+As far as I have seen it is still possible to use the device as a MIDI controller in DAWs while this tool is running.
 
-## Sysex commands used in the script
+> Intuitive Instruments is likely to come up with something slightly more sophisticated in the future, so don't get too excited about this, it is likely to become abandonware soon as I am only developing this for my personal need
+
+### Connection
+
+The first step is to connect to an Exquis, by selecting a midi device via the first dropdomn menu next to the `Select MIDI Device` text.  If connection is successful you will receive a message prompt that indicates that the port has been successfully open.
+
+### Basic Layout
+
+When creating the layout, it is useful to tilt your Exquis horizontally as such that the function buttons and the strip are on the left and the knobs are on the right. I will be describing the logic with which you can create custom templates on the `Main Layer` tab, going through each of the options in the order of appearance:
+-`Start Note`, this would be the midi note that will be assigned to the Top-Left note in the layout with the Exquis placed as said before. In the normal layout, it is the hexagon just above the octave buttons.
+-`Start Octave`, completes the note before with the octave
+-`X semitone intervals`, this would be the step in semitones between each hexagon and the next one next to it on the X axis, i.e. on its right, looking at the Exquis horizontally, as indicated before.
+-`Y semitone intervals`, as above but for the Y-axis, which corresponds to the semitones in the Exquis normal layout.
+-`Z semitone intervals`, this would be the step in semitones between each hexagon and the one in the next column (if seen horizontally) or row.
+
+Once we have made our selection by pressing the `Generate Template` the template will be generated and we can regenerate it as many time as we want to try different intervals.
+In order to send the generated template to the Exquis we can press the `Send Template` Button.
+ 
+> You can use the template generating capabilities of the app to visualise layout even without an Exquis connected
+
+#### Example - Horizontal Harmonic table
+If we take the same template that the Exquis ships with but we want to transpose it horizontally, ignoring the initial note we can set the following:
+- `X` will have to be a semitone, 1
+- `Y` would need to be a descending fourth (-5), because we are starting from the top and going down.
+- `Z` would need to be a minor third (i.e. -4 semitones). 
+
+
+### Advanced Layouts
+The real reason I developed this tool was to create templates for two handed usage with split layout. Those are accessible selecting the `Split Layer` tab. Note that there are two types of split, whose names have been attributed by looking at the Exquis in his *natural* vertical state :
+- `Horizontal`,  i.e. by rows vertically or columns horizontally, it is possible to split the Exquis starting from the 3rd,5th,7th or 9th column/row by selecting the required interval in the `Column Split` combobox. The option on the main layer are going to be applied to the left/bottom later, the ones on the split layer to the top/right one. The options are the same as for the main layout.
+- `Vertical`, i.e. trying to split the Exquis Vertically, which means that each column/row of length 6 is split evenly between the two layer, but the user has the option to select how to split the rows/columns of length 5. There are 3 options to deal with such split:
+	- `32`, assigns 3 hexagons to the left/top layer and 2  to the right/bottom one,
+	-  `23` does exactly the opposite
+	- `22` assigns 2 tho two leftmost/top notes to the main layer and the two rightmost/bottom to the split layer. The remaining note is blanked out.
+
+
+### Exiting the application
+
+Pressing the `Close Application` button in the top right corner will:
+ 1. Free the Exquis from the application control, all the lights would turn dark
+ 2. Close the application itself
+ 3. Close Python
+
+Note that, from what I have seen, it seems the notes assignment do not disappear after the application has been stored, you would need to restart the Exquis.
+
+## Technical Notes
+
+### In development
+
+- possibility to save and load templates
+- creating colour schemes
+
+### Sysex commands used in the script
 
 There are 3 main sysex messages used in the script:
 
@@ -53,4 +101,4 @@ This is why I included an adjustment to rescale colours
 - Sergueï Bécoulet, which gently provided the sysex codes, in particular the one that allows to talk with the exquis
 - the whole Intuitive Instruments team for creating such an excellent instrument
 
-As a client of most French speaking expressive controller makers (Expressive E, Intuitive instruments, Embodme and La Voix du Luthier) a big thanks for the French government/IRCAM for feeding up this fantastic start-ups!
+As a client of most French speaking expressive controller makers (Expressive E, Intuitive instruments, Embodme, Aodyo and La Voix du Luthier) a big thanks for the French government/IRCAM for feeding up this fantastic start-ups!
