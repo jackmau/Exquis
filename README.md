@@ -1,6 +1,9 @@
 ﻿# Intuitive Instruments Exquis Isomorphic Layout Programmer
 
 Thanks to chatGPT handling of OOP, threading and UI stuff, I have a working python script with a very basic fronted for reprogramming lights and notes layouts.
+This is how the app looks:
+
+![main_interface](screenshots/main_interface.jpg)
 
 ## Requirements
 - Exquis updated to firmare 1.1.
@@ -16,12 +19,19 @@ Thanks to chatGPT handling of OOP, threading and UI stuff, I have a working pyth
 Currently the app is very limited, as my Python programming skills. Its main aim is to create custom isomorphic layout for the Exquis.
 App has been tested in Arch Linux and Windows 10.
 As far as I have seen it is still possible to use the device as a MIDI controller in DAWs while this tool is running.
+I have included as many picture as possible to illustrate how it works, including some examples.
 
 > Intuitive Instruments is likely to come up with something slightly more sophisticated in the future, so don't get too excited about this, it is likely to become abandonware soon as I am only developing this for my personal need
 
 ### Connection
 
-The first step is to connect to an Exquis, by selecting a midi device via the first dropdomn menu next to the `Select MIDI Device` text.  If connection is successful you will receive a message prompt that indicates that the port has been successfully open.
+The first step is to connect to an Exquis, by selecting a midi device via the first dropdomn menu next to the `Select MIDI Device` text. 
+
+![midi_selection](screenshots/select_midi_device.jpg)
+
+If connection is successful you will receive a message prompt that indicates that the port has been successfully open.
+
+![sucessful_connection](screenshots/successfull_connection.jpg)
 
 ### Basic Layout
 
@@ -31,6 +41,10 @@ When creating the layout, it is useful to tilt your Exquis horizontally as such 
 -`X semitone intervals`, this would be the step in semitones between each hexagon and the next one next to it on the X axis, i.e. on its right, looking at the Exquis horizontally, as indicated before.
 -`Y semitone intervals`, as above but for the Y-axis, which corresponds to the semitones in the Exquis normal layout.
 -`Z semitone intervals`, this would be the step in semitones between each hexagon and the one in the next column (if seen horizontally) or row.
+
+**TL;DR**
+
+![main layer](screenshots/main_layer.jpg)
 
 Once we have made our selection by pressing the `Generate Template` the template will be generated and we can regenerate it as many time as we want to try different intervals.
 In order to send the generated template to the Exquis we can press the `Send Template` Button.
@@ -43,14 +57,26 @@ If we take the same template that the Exquis ships with but we want to transpose
 - `Y` would need to be a descending fourth (-5), because we are starting from the top and going down.
 - `Z` would need to be a minor third (i.e. -4 semitones). 
 
+Here is the resulting layout:
+
+![horizontal-hamronic](screenshots/horizontal-harmonic.jpg)
 
 ### Advanced Layouts
 The real reason I developed this tool was to create templates for two handed usage with split layout. Those are accessible selecting the `Split Layer` tab. Note that there are two types of split, whose names have been attributed by looking at the Exquis in his *natural* vertical state :
-- `Horizontal`,  i.e. by rows vertically or columns horizontally, it is possible to split the Exquis starting from the 3rd,5th,7th or 9th column/row by selecting the required interval in the `Column Split` combobox. The option on the main layer are going to be applied to the left/bottom later, the ones on the split layer to the top/right one. The options are the same as for the main layout.
+
 - `Vertical`, i.e. trying to split the Exquis Vertically, which means that each column/row of length 6 is split evenly between the two layer, but the user has the option to select how to split the rows/columns of length 5. There are 3 options to deal with such split:
 	- `32`, assigns 3 hexagons to the left/top layer and 2  to the right/bottom one,
-	-  `23` does exactly the opposite
-	- `22` assigns 2 tho two leftmost/top notes to the main layer and the two rightmost/bottom to the split layer. The remaining note is blanked out.
+
+	![32](screenshots/Vertical-32.jpg)
+	
+	- `23` does exactly the opposite
+ 	- `22` assigns 2 tho two leftmost/top notes to the main layer and the two rightmost/bottom to the split layer. The remaining note is blanked out.
+
+	![22](screenshots/Vertical-22.jpg)
+
+- `Horizontal`,  i.e. by rows vertically or columns horizontally, it is possible to split the Exquis starting from the 3rd, 5th, 7th or 9th column/row by selecting the required interval in the `Column Split` combobox. The option on the main layer are going to be applied to the left/bottom later, the ones on the split layer to the top/right one. The options are the same as for the main layout. 
+
+![horizontal-split](screenshots/horizontal.jpg)
 
 #### Example Vertical Split - Diagonal Symmetric Harmonic Table
 This layout is a slight variation on the default Exquis layout where the chromatic notes are to be found diagonally in rows of 5 notes without any duplicate. It features a couple of missing notes on the top and on the bottom and it dosen't use 5 keys. It is particularly ergonomic when playing the Exquis vertically on your lap. You can decide the starting notes as you please but the important intervals are the following:
@@ -59,6 +85,9 @@ This layout is a slight variation on the default Exquis layout where the chromat
 - `Z`, 4 for the main layer and 1 for the 
 - `Column Split` set to 22.
 Here is the resulting layout, with its main characteristics highlighted:
+
+![diagonal-symmetric](screenshots/Diagonal-Mirror-Harmonic-Table.jpg)
+
 #### Example Horizontal Split - Mixed  Diagonal-Horizontal Harmonic Table
 Conceptually this is similar to the previous, but asymmetric and with the left/bottom/main layout diagonal and the other horizontal. Here are the main parameters:
 - `X`, 2 for the main layer (the diagonal one), 1 for the split one (the horizontal one)
@@ -66,6 +95,8 @@ Conceptually this is similar to the previous, but asymmetric and with the left/b
 - `Z`, 3 for the main layer, and -3 for the split one
 - `Column Split` will be set as 5, the first 4 columns/rows are used by the main layer, the other by the secondary one
 Here is the resulting layout, with its main characteristics highlighted:
+
+![horizontal-split-example](screenshots/Diag-Horizontal-mixed.jpg)
 
 ### Exiting the application
 
