@@ -52,6 +52,20 @@ The real reason I developed this tool was to create templates for two handed usa
 	-  `23` does exactly the opposite
 	- `22` assigns 2 tho two leftmost/top notes to the main layer and the two rightmost/bottom to the split layer. The remaining note is blanked out.
 
+#### Example Vertical Split - Diagonal Symmetric Harmonic Table
+This layout is a slight variation on the default Exquis layout where the chromatic notes are to be found diagonally in rows of 5 notes without any duplicate. It features a couple of missing notes on the top and on the bottom and it dosen't use 5 keys. It is particularly ergonomic when playing the Exquis vertically on your lap. You can decide the starting notes as you please but the important intervals are the following:
+- `X`, 5 for both the main and the split layer
+- `Y`, 3 for the main layer and -3 for the split one, as the the mirror each other
+- `Z`, 4 for the main layer and 1 for the 
+- `Column Split` set to 22.
+Here is the resulting layout, with its main characteristics highlighted:
+#### Example Horizontal Split - Mixed  Diagonal-Horizontal Harmonic Table
+Conceptually this is similar to the previous, but asymmetric and with the left/bottom/main layout diagonal and the other horizontal. Here are the main parameters:
+- `X`, 2 for the main layer (the diagonal one), 1 for the split one (the horizontal one)
+- `Y`, 4 for the main layer (notes increasing descending), -7 for the split one (notes increasing as normally going up)
+- `Z`, 3 for the main layer, and -3 for the split one
+- `Column Split` will be set as 5, the first 4 columns/rows are used by the main layer, the other by the secondary one
+Here is the resulting layout, with its main characteristics highlighted:
 
 ### Exiting the application
 
@@ -67,7 +81,10 @@ Note that, from what I have seen, it seems the notes assignment do not disappear
 ### In development
 
 - possibility to save and load templates
+- default templates 
 - creating colour schemes
+- saving and loading colour schemes
+- default colour schemes
 
 ### Sysex commands used in the script
 
