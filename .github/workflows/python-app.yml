@@ -21,5 +21,6 @@ jobs:
         with:
           spec: 'app.py'
           requirements: 'requirements.txt'
-          upload_exe_with_name: 'Exquis Isomorphic Remapper'
+          upload_exe_with_name: ${{ matrix.os }}-'Exquis Isomorphic Remapper'
+          compression_level: 9
           options: --onefile, --name "Exquis Remapper", --windowed, 
