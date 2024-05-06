@@ -3,6 +3,8 @@ name: Build Standalone Python application
 on:
   push:
     branches: [ "automation-test" ]
+    tags:
+      - "v*.*.*"
   pull_request:
     branches: [ "main" ]
 
