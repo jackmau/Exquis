@@ -23,4 +23,4 @@ jobs:
           requirements: 'requirements.txt'
           upload_exe_with_name: ${{ matrix.os }}-Exquis-Isomorphic-Remapper'
           compression_level: 9
-          options: --onefile, --name "Exquis Remapper", --windowed, 
+          #options: --onefile, --name "Exquis Remapper", --windowed, 
