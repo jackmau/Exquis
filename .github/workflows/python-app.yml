@@ -2,7 +2,7 @@ name: Build Standalone Python application
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "automation-test" ]
   pull_request:
     branches: [ "main" ]
 
