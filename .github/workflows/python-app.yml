@@ -2,15 +2,14 @@ name: Build Standalone Python application
 
 on:
   push:
-    branches: [ "automation-test" ]
     tags:
       - "v*.*.*"
   pull_request:
     branches: [ "main" ]
 
 permissions:
-  contents: read
-
+  contents: write
+  
 jobs:
   pyinstaller-build:
     runs-on: ${{ matrix.os }}
