@@ -29,4 +29,4 @@ jobs:
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ matrix.os }}-Exquis-Isomorphic-Remapper
+          files: .dist/${{ matrix.os }}-Exquis-Isomorphic-Remapper
