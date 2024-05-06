@@ -5,14 +5,6 @@ This is how the app looks:
 
 ![main_interface](screenshots/main_interface.jpg)
 
-## Requirements
-- Exquis updated to firmare 1.1.
-- Python 3.8+
-- The following python libraries:
-	- python-rtmidi
-	- tkinter
-	- matplotlib
-	- numpy
 
 ## User Guide
 
@@ -108,6 +100,11 @@ Pressing the `Close Application` button in the top right corner will:
 Note that, from what I have seen, it seems the notes assignment do not disappear after the application has been stored, you would need to restart the Exquis.
 
 ## Technical Notes
+
+### Requirements
+- Exquis updated to firmare 1.1.
+- Python 3.8+
+- Python libraries described in [Requirements](requirements.txt)
 
 ### In development
 
