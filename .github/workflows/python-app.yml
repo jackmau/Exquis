@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   pyinstaller-build:
-    runs-on: <windows-latest / ubuntu-latest / macos-latest>
+    runs-on: [windows-latest, ubuntu-latest, macos-latest]
     steps:
       - name: Create Standalone App
         uses: sayyid5416/pyinstaller@v1
