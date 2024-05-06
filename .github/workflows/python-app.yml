@@ -21,6 +21,10 @@ jobs:
         with:
           spec: 'Exquis Remapper.spec'
           requirements: 'requirements.txt'
-          upload_exe_with_name: ${{ matrix.os }}-Exquis-Isomorphic-Remapper'
+          upload_exe_with_name: ${{ matrix.os }}-Exquis-Isomorphic-Remapper
           compression_level: 9
           #options: --onefile, --name "Exquis Remapper", --windowed, 
+      - name: Publish release
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.os }}-Exquis-Isomorphic-Remapper
