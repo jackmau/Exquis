@@ -26,7 +26,7 @@ jobs:
       - name: Create zip for upload
         uses: vimtor/action-zip@v1.2
         with:
-          files: ./dist
+          files: ./dist/*
           recursive: false
           dest: Exquis-Isomorphic-Remapper-${{ matrix.os }}-${{github.ref_name}}.zip
       - name: Publish release
