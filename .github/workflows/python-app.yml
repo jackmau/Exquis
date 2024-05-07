@@ -23,19 +23,10 @@ jobs:
           #upload_exe_with_name: ${{ matrix.os }}-Exquis-Isomorphic-Remapper-${{github.ref_name}}
           #compression_level: 9
           #options: --onefile, --name "Exquis Remapper", --windowed,
-      - name: Create Mac/Linux zip for upload
-        if: matrix.os != 'windows-latest'
+      - name: Create zip for upload
         uses: vimtor/action-zip@v1.2
         with:
-          files: ./dist/Exquis-Remapper
-          recursive: false
-          dest: Exquis-Isomorphic-Remapper-${{ matrix.os }}-${{github.ref_name}}.zip
-      - name: Create Windows zip for upload
-        if: matrix.os == 'windows-latest'
-        uses: vimtor/action-zip@v1.2
-        with:
-          files: ./dist/Exquis-Remapper.exe
-          recursive: false
+          files: ./dist/
           dest: Exquis-Isomorphic-Remapper-${{ matrix.os }}-${{github.ref_name}}.zip
       - name: Publish release
         uses: softprops/action-gh-release@v2
