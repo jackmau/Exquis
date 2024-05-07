@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - "v*.*.*"
-  pull_request:
-    branches: [ "main" ]
 
 permissions:
   contents: write
@@ -22,10 +20,16 @@ jobs:
         with:
           spec: 'Exquis Remapper.spec'
           requirements: 'requirements.txt'
-          upload_exe_with_name: ${{ matrix.os }}-Exquis-Isomorphic-Remapper-${{github.ref_name}}
-          compression_level: 9
-          #options: --onefile, --name "Exquis Remapper", --windowed, 
+          #upload_exe_with_name: ${{ matrix.os }}-Exquis-Isomorphic-Remapper-${{github.ref_name}}
+          #compression_level: 9
+          #options: --onefile, --name "Exquis Remapper", --windowed,
+      - name: Create zip for upload
+        uses: vimtor/action-zip@v1.2
+        with:
+          files: 'dist/Exquis Remapper*'
+          recursive: false
+          dest: Exquis-Isomorphic-Remapper-${{ matrix.os }}-${{github.ref_name}}.zip
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          files: 'dist/Exquis Remapper*'
+          files: Exquis-Isomorphic-Remapper-${{ matrix.os }}-${{github.ref_name}}.zip
