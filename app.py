@@ -291,7 +291,7 @@ class MidiApp:
 if __name__ == "__main__":
     root = tk.Tk()
     root.geometry("700x750")
-    root.resizable(0, 0)
+    #root.resizable(0, 0)
     # Define a new font with a custom size
     custom_font = ('TkDefaultFont', 14)   # Change the size to your desired value
     style = ttk.Style()
