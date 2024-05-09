@@ -1,11 +1,10 @@
-import tkinter as tk
-from tkinter import ttk, font
-import time
-import rtmidi
-import matplotlib.pyplot as plt
+from tkinter import ttk, font, Tk, messagebox, StringVar, IntVar
+from time import sleep
+from rtmidi import MidiOut
+from matplotlib.pyplot import subplots
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import numpy as np
-import threading
+from numpy import linspace, cos, sin, pi 
+from threading import Thread
 
 note_names = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
@@ -74,9 +73,9 @@ def note_number_to_name(note_number):
 
 def hexagon(ax, center, size, color, label, fontsize):
     """Draw a hexagon on the given axes."""
-    angle = np.linspace(0, 2*np.pi, 7)
-    x = center[0] + size * np.cos(angle)
-    y = center[1] + size * np.sin(angle)
+    angle = linspace(0, 2*pi, 7)
+    x = center[0] + size * cos(angle)
+    y = center[1] + size * sin(angle)
     ax.fill(x, y, color=color, edgecolor='k')
     if sum(color) > 1:
         tx_color = 'black'
@@ -87,7 +86,7 @@ def hexagon(ax, center, size, color, label, fontsize):
 def create_hexagonal_keyboard(ax, notes, r, g, b):
     """Create an image of a hexagonal keyboard."""
 
-    column_width = 2 * np.cos(np.pi / 12)  # Width of a hexagon column
+    column_width = 2 * cos(pi / 12)  # Width of a hexagon column
     row_height = 1.1  # Height of a hexagon row
     size = 0.6  # Size of hexagons
     fontsize = 14  # Font size of note labels
@@ -119,7 +118,7 @@ class MidiSender:
         self.is_running = True
         while self.is_running:
             self.midi_out.send_message([0xF0, 0x00, 0x21, 0x7E, 0xF7])
-            time.sleep(self.interval / 1000.0)
+            sleep(self.interval / 1000.0)
 
     def stop_sending_midi(self):
         self.is_running = False
@@ -130,18 +129,18 @@ class MidiApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Exquis Template Editor")
-        self.selected_image_index = tk.StringVar()
-        self.selected_midi_device = tk.StringVar()
+        self.selected_image_index = StringVar()
+        self.selected_midi_device = StringVar()
         self.midi_sender = None  # To store the MidiSender instance
         self.midi_thread = None  # To store the reference to the MIDI thread
-        self.midi_out = rtmidi.MidiOut()
+        self.midi_out = MidiOut()
         self.midi_devices = self.midi_out.get_ports()
         self.split_combos = []
         self.create_gui()
 
     def create_gui(self):
 
-        self.fig, self.ax = plt.subplots(figsize=(7, 4.5))
+        self.fig, self.ax = subplots(figsize=(7, 4.5))
         self.ax.axis('off')
         self.fig.tight_layout()
         # Select MIDI Device
@@ -165,8 +164,8 @@ class MidiApp:
         self.notebook.add(self.frame2, text="Split Layer")
 
         # Main parameters
-        self.start_note, self.start_octave = tk.IntVar(), tk.IntVar()
-        self.x_step1, self.y_step1, self.z_step1 = tk.IntVar(),tk.IntVar(),tk.IntVar()
+        self.start_note, self.start_octave = IntVar(), IntVar()
+        self.x_step1, self.y_step1, self.z_step1 = IntVar(), IntVar(), IntVar()
         ## Start Note
         ttk.Label(self.frame1, text="Start Note:").grid(row=0,column=0,padx=10,pady=5)
         self.start_note_combo = ttk.Combobox(self.frame1, textvariable=self.start_note, values=note_names)
@@ -187,10 +186,10 @@ class MidiApp:
          
         # Split parameters
         split_values = ["No Split","Horizontal","Vertical"]
-        self.split = tk.StringVar()
-        self.split_start_note, self.split_start_octave = tk.IntVar(), tk.IntVar()
-        self.x_step2, self.y_step2, self.z_step2 = tk.IntVar(),tk.IntVar(),tk.IntVar()
-        self.split_column = tk.IntVar(value=13)
+        self.split = StringVar()
+        self.split_start_note, self.split_start_octave = IntVar(), IntVar()
+        self.x_step2, self.y_step2, self.z_step2 = IntVar(), IntVar(), IntVar()
+        self.split_column = IntVar(value=13)
         ## Split Type
         ttk.Label(self.frame2, text="Split Type:").grid(row=0,column=0,padx=10,pady=5)
         self.split_combo = ttk.Combobox(self.frame2, textvariable=self.split, values=split_values)
@@ -251,15 +250,15 @@ class MidiApp:
     def open_midi(self, event):
         try:
             self.midi_out.open_port(self.midi_device_combo.current())
-            tk.messagebox.showinfo("MIDI connection", f"Successfully opened MIDI output port: {self.selected_midi_device.get()}")
+            messagebox.showinfo("MIDI connection", f"Successfully opened MIDI output port: {self.selected_midi_device.get()}")
         except:
-            tk.messagebox.showerror("MIDI Connection Error", f"Failed to connect to {self.selected_midi_device}")
+            messagebox.showerror("MIDI Connection Error", f"Failed to connect to {self.selected_midi_device}")
 
     def start_midi(self):
         self.midi_sender = MidiSender(self.midi_out, interval=400)
-        self.midi_thread = threading.Thread(target=self.midi_sender.start_sending_midi)
+        self.midi_thread = Thread(target=self.midi_sender.start_sending_midi)
         self.midi_thread.start()
-        time.sleep(0.8)
+        sleep(0.8)
         r,g,b = self.colours
         notes = self.notes
         for k in range(61):
@@ -289,7 +288,7 @@ class MidiApp:
         [self.split_combos[x].grid(row=6,column=x,padx=10,pady=5) for x in range(len(self.split_combos))]
 
 if __name__ == "__main__":
-    root = tk.Tk()
+    root = Tk()
     root.geometry("700x750")
     #root.resizable(0, 0)
     # Define a new font with a custom size
