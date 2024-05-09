@@ -144,103 +144,104 @@ class MidiApp:
         self.ax.axis('off')
         self.fig.tight_layout()
         # Select MIDI Device
-        self.midi_device_label = ttk.Label(self.root, text="Select MIDI Device:")
+        self.midi_device_label = ttk.Label(self.root, text="MIDI Device:")
         self.midi_device_label.grid(row=0,column=0,padx=10,pady=5)
 
         self.midi_device_combo = ttk.Combobox(self.root, values=self.midi_devices, textvariable=self.selected_midi_device)
         self.midi_device_combo.grid(row=0,column=1,padx=10,pady=5)
         self.midi_device_combo.bind("<<ComboboxSelected>>", self.open_midi)
 
-        # Create a notebook (tabbed interface)
-        self.notebook = ttk.Notebook(self.root)
-        self.notebook.grid(row=1,column=0,padx=10,pady=5,columnspan=2)
-
-        # Create frames for each option
-        self.frame1 = ttk.Frame(self.notebook)
-        self.frame2 = ttk.Frame(self.notebook)
-
-        # Add frames to the notebook
-        self.notebook.add(self.frame1, text="Main Layer")
-        self.notebook.add(self.frame2, text="Split Layer")
-
         # Main parameters
-        self.start_note, self.start_octave = IntVar(), IntVar()
-        self.x_step1, self.y_step1, self.z_step1 = IntVar(), IntVar(), IntVar()
-        ## Start Note
-        ttk.Label(self.frame1, text="Start Note:").grid(row=0,column=0,padx=10,pady=5)
-        self.start_note_combo = ttk.Combobox(self.frame1, textvariable=self.start_note, values=note_names)
-        self.start_note_combo.current(0)
-        self.start_note_combo.grid(row=0,column=1,padx=10,pady=5)
-        ## Start Octave
-        ttk.Label(self.frame1, text="Start Octave:").grid(row=1,column=0,padx=10,pady=5)
-        ttk.Spinbox(self.frame1, textvariable=self.start_octave, values=list(range(9))).grid(row=1,column=1,padx=10,pady=5)
-        ## X Step
-        ttk.Label(self.frame1, text="X semitone intervals:").grid(row=2,column=0,padx=10,pady=5)
-        ttk.Spinbox(self.frame1, textvariable=self.x_step1, values=list(range(-11,12))).grid(row=2,column=1,padx=10,pady=5)
-        ## Y Step
-        ttk.Label(self.frame1, text="Y semitone intervals:").grid(row=3,column=0,padx=10,pady=5)
-        ttk.Spinbox(self.frame1, textvariable=self.y_step1, values=list(range(-11,12))).grid(row=3,column=1,padx=10,pady=5)
-        ## Z Step
-        ttk.Label(self.frame1, text="Z semitone intervals:").grid(row=4,column=0,padx=10,pady=5)
-        ttk.Spinbox(self.frame1, textvariable=self.z_step1, values=list(range(-5,6))).grid(row=4,column=1,padx=10,pady=5)
-         
-        # Split parameters
-        split_values = ["No Split","Horizontal","Vertical"]
-        self.split = StringVar()
-        self.split_start_note, self.split_start_octave = IntVar(), IntVar()
-        self.x_step2, self.y_step2, self.z_step2 = IntVar(), IntVar(), IntVar()
-        self.split_column = IntVar(value=13)
+        self.start_note, self.start_octave = StringVar(), IntVar()
+        self.x_step, self.y_step, self.z_step = IntVar(), IntVar(), IntVar()
+        layers = ["Main Layer","Split Layer"]
+        self.split_types = ["No Split", "Horizontal","Vertical"]
+        self.layer, self.split = StringVar(), StringVar()
+        self.split_criterion = IntVar()
+        self.recall, self.st, self.sc = 0, self.split_types[0], 0
+        ## Init Variables
+        self.note, self.octave = ["C","C"], [0,0]
+        self.x, self.y, self.z = [0,0], [0,0], [0,0]
         ## Split Type
-        ttk.Label(self.frame2, text="Split Type:").grid(row=0,column=0,padx=10,pady=5)
-        self.split_combo = ttk.Combobox(self.frame2, textvariable=self.split, values=split_values)
+        ttk.Label(self.root, text="Layer Selected:").grid(row=1,column=0,padx=10,pady=5)
+        self.split_combo = ttk.Combobox(self.root, textvariable=self.layer, values=layers)
         self.split_combo.current(0)
-        self.split_combo.grid(row=0,column=1,padx=10,pady=5)
-        ## Split Start Note
-        ttk.Label(self.frame2, text="Start Note:").grid(row=1,column=0,padx=10,pady=5)
-        self.split_start_note_combo = ttk.Combobox(self.frame2, textvariable=self.split_start_note, values=note_names)
-        self.split_start_note_combo.current(0)
-        self.split_start_note_combo.grid(row=1,column=1,padx=10,pady=5)
-        ## Split Start Octave
-        ttk.Label(self.frame2, text="Start Octave:").grid(row=2,column=0,padx=10,pady=5)
-        ttk.Spinbox(self.frame2, textvariable=self.split_start_octave, values=list(range(9))).grid(row=2,column=1,padx=10,pady=5)
-        ## Split X Step
-        ttk.Label(self.frame2, text="X semitone intervals:").grid(row=3,column=0,padx=10,pady=5)
-        ttk.Spinbox(self.frame2, textvariable=self.x_step2, values=list(range(-11,12))).grid(row=3,column=1,padx=10,pady=5)
-        ## Split Y Step
-        ttk.Label(self.frame2, text="Y semitone intervals:").grid(row=4,column=0,padx=10,pady=5)
-        ttk.Spinbox(self.frame2, textvariable=self.y_step2, values=list(range(-11,12))).grid(row=4,column=1,padx=10,pady=5)
-        ## Split Z Step
-        ttk.Label(self.frame2, text="Z semitone intervals:").grid(row=5,column=0,padx=10,pady=5)
-        ttk.Spinbox(self.frame2, textvariable=self.z_step2, values=list(range(-5,6))).grid(row=5,column=1,padx=10,pady=5)
-        ## Add remaining frames according to the type of split
+        self.split_combo.grid(row=1,column=1,padx=10,pady=5)
         self.split_combo.bind("<<ComboboxSelected>>", self.add_split_boxes)
+        ## Start Note
+        ttk.Label(self.root, text="Start Note:").grid(row=2,column=0,padx=10,pady=5)
+        self.start_note_combo = ttk.Combobox(self.root, textvariable=self.start_note, values=note_names)
+        self.start_note_combo.current(0)
+        self.start_note_combo.grid(row=2,column=1,padx=10,pady=5)
+        self.start_note_combo.bind("<<ComboboxSelected>>", self.generate_image)
+        ## Start Octave
+        ttk.Label(self.root, text="Start Octave:").grid(row=3,column=0,padx=10,pady=5)
+        ttk.Spinbox(self.root, textvariable=self.start_octave, values=list(range(9))).grid(row=3,column=1,padx=10,pady=5)
+        self.start_octave.trace('w',self.generate_image)
+        ## X Step
+        ttk.Label(self.root, text="X (→):").grid(row=4,column=0,padx=10,pady=5)
+        ttk.Spinbox(self.root, textvariable=self.x_step, values=list(range(-11,12)), command = self.generate_image).grid(row=4,column=1,padx=10,pady=5)
+        self.x_step.trace('w',self.generate_image)
+        ## Y Step
+        ttk.Label(self.root, text="Y (↓):").grid(row=5,column=0,padx=10,pady=5)
+        ttk.Spinbox(self.root, textvariable=self.y_step, values=list(range(-11,12)), command = self.generate_image).grid(row=5,column=1,padx=10,pady=5)
+        self.y_step.trace('w',self.generate_image)
+        ## Z Step
+        ttk.Label(self.root, text="Z (↘):").grid(row=6,column=0,padx=10,pady=5)
+        ttk.Spinbox(self.root, textvariable=self.z_step, values=list(range(-5,6)), command = self.generate_image).grid(row=6,column=1,padx=10,pady=5)
+        self.z_step.trace('w',self.generate_image)
+
+        ## Add remaining frames according to the type of split
+        
 
         self.stop_button = ttk.Button(self.root, text="Close Application", command=self.stop_midi)
-        self.stop_button.grid(row=0,column=2,padx=10,pady=5)
-        # Button to execute selected option
-        self.gen_button = ttk.Button(self.root, text="Generate\nTemplate", command=self.generate_image)
-        self.gen_button.grid(row=1,column=2,padx=10,pady=5)
+        self.stop_button.grid(row=0,column=3,padx=10,pady=5)
+
         # MIDI buttons
         self.start_button = ttk.Button(self.root, text="Send Template", command=self.start_midi)
-        self.start_button.grid(row=1,column=2,padx=10,pady=5,sticky="S")
+        self.start_button.grid(row=6,column=3,padx=10,pady=5,sticky="S")
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
         self.canvas_widget = self.canvas.get_tk_widget()
-        self.canvas_widget.grid(row=3,column=0,columnspan=3,padx=10,pady=5)
+        self.canvas_widget.grid(row=7,column=0,columnspan=4,padx=10,pady=5)
 
+    def update_layer(self):
+        if self.layer.get() == 'Main Layer':
+            a = 0
+        else: a = 1
+        if self.recall == 0:
+            self.note[a] = self.start_note.get()
+            self.octave[a] = self.start_octave.get()
+            self.x[a] = self.x_step.get()
+            self.y[a] = self.y_step.get()
+            self.z[a] = self.z_step.get()
+            self.st = self.split.get()
+            self.sc = self.split_criterion.get()
 
+    def recall_layer(self):
+        if self.layer.get() == 'Main Layer':
+            a = 0
+        else: a = 1
+        self.recall = 1
+        self.start_note.set(self.note[a])
+        self.start_octave.set(self.octave[a])
+        self.x_step.set(self.x[a])
+        self.y_step.set(self.y[a])
+        self.z_step.set(self.z[a])
+        self.recall = 0
+        self.split.set(self.st)
+        self.split_criterion.set(self.sc)
+        
 
-    def generate_image(self):
+    def generate_image(self, *args):
         self.ax.clear()
-        start_note = []
-        start_note.append(self.start_note_combo.current() + 12 * (self.start_octave.get()+1))
-        start_note.append(self.split_start_note_combo.current() + 12 * (self.split_start_octave.get()+1))
-        x = [self.x_step1.get(), self.x_step2.get()]
-        y = [self.y_step1.get(), self.y_step2.get()]
-        z = [self.z_step1.get(), self.z_step2.get()]
+        self.update_layer()
+        start_note = [note_names.index(self.note[0]) + 12 * (self.octave[0]+1),note_names.index(self.note[1]) + 12 * (self.octave[1]+1)]
         if self.split.get() == "Vertical":
-            self.notes = layout_vertical(start_note, x, y, z, [int(k) for k in str(self.split_column.get())])
-        else:
-            self.notes = layout_horizontal(start_note, x, y, z, self.split_column.get())
+            self.notes = layout_vertical(start_note, self.x, self.y, self.z, [int(k) for k in str(self.split_criterion.get())])
+        elif self.split.get() == "Horizontal":
+            self.notes = layout_horizontal(start_note, self.x, self.y, self.z, self.split_criterion.get())
+        else: 
+            self.notes = layout_horizontal(start_note, self.x, self.y, self.z, 13)
         self.colours = note_colours(self.notes, axis_cs)
         r,g,b = self.colours
         notes = [note_number_to_name(n) for n in self.notes]
@@ -277,15 +278,26 @@ class MidiApp:
         exit()
             
     def add_split_boxes(self, event):
-        [x.destroy() for x in self.split_combos]
-        self.split_combos = []
-        self.split_combos.append(ttk.Label(self.frame2, text="Column Split:"))
-        if self.split.get() == "Horizontal":
-            splitvalues = list(range(3,10,2))
-        if self.split.get() == "Vertical":    
-            splitvalues = [32,23,22]
-        self.split_combos.append(ttk.Combobox(self.frame2, textvariable=self.split_column, values=splitvalues))
-        [self.split_combos[x].grid(row=6,column=x,padx=10,pady=5) for x in range(len(self.split_combos))]
+        self.recall_layer()
+        if self.layer.get() == "Main Layer":
+            [x.destroy() for x in self.split_combos]
+        else:
+            self.split_combos = []
+            self.split_combos.append(ttk.Label(self.root, text="Split Type:"))
+            self.split_combos.append(ttk.Combobox(self.root, textvariable=self.split, values=self.split_types, postcommand = self.update_layer))
+            self.split_combos.append(ttk.Label(self.root, text="Split Criterion:"))
+            self.split_combos.append(ttk.Combobox(self.root, textvariable=self.split_criterion, values=[0], postcommand=self.update_split))
+            self.split_criterion.trace('w',self.generate_image)
+            [self.split_combos[x].grid(row=1+x//2,column=2+(x % 2),padx=10,pady=5) for x in range(len(self.split_combos))]
+    
+    def update_split(self):
+            if self.split.get() == "Horizontal":
+                self.split_combos[3]["values"] = list(range(3,10,2))
+            elif self.split.get() == "Vertical":    
+                self.split_combos[3]["values"] = [32,23,22]
+            else:
+                self.split_combos[3]["values"] = [0]
+            
 
 if __name__ == "__main__":
     root = Tk()
