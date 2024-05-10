@@ -227,9 +227,9 @@ class MidiApp:
         self.x_step.set(self.x[a])
         self.y_step.set(self.y[a])
         self.z_step.set(self.z[a])
-        self.recall = 0
         self.split.set(self.st)
         self.split_criterion.set(self.sc)
+        self.recall = 0
         
 
     def generate_image(self, *args):
