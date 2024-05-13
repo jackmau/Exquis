@@ -155,10 +155,12 @@ class MidiApp:
         self.start_note, self.start_octave = StringVar(), IntVar()
         self.x_step, self.y_step, self.z_step = IntVar(), IntVar(), IntVar()
         layers = ["Main Layer","Split Layer"]
-        self.split_types = ["No Split", "Horizontal","Vertical"]
+        self.split_types = ["No Split"]
+        [self.split_types.append("by column - " + str(x)) for x in range(3,10,2)]
+        [self.split_types.append("by row - " + str(x)) for x in [32,23,22]]
         self.layer, self.split = StringVar(), StringVar()
-        self.split_criterion = IntVar()
-        self.recall, self.st, self.sc = 0, self.split_types[0], 0
+        self.recall, self.st = 0, 0 
+        self.split.set(self.split_types[0])
         ## Init Variables
         self.note, self.octave = ["C","C"], [0,0]
         self.x, self.y, self.z = [0,0], [0,0], [0,0]
@@ -167,12 +169,14 @@ class MidiApp:
         self.split_combo = ttk.Combobox(self.root, textvariable=self.layer, values=layers)
         self.split_combo.current(0)
         self.split_combo.grid(row=1,column=1,padx=10,pady=5)
+        self.split_combo.configure(width=10)
         self.split_combo.bind("<<ComboboxSelected>>", self.add_split_boxes)
         ## Start Note
         ttk.Label(self.root, text="Start Note:").grid(row=2,column=0,padx=10,pady=5)
         self.start_note_combo = ttk.Combobox(self.root, textvariable=self.start_note, values=note_names)
         self.start_note_combo.current(0)
         self.start_note_combo.grid(row=2,column=1,padx=10,pady=5)
+        self.start_note_combo.configure(width=3)
         self.start_note_combo.bind("<<ComboboxSelected>>", self.generate_image)
         ## Start Octave
         ttk.Label(self.root, text="Start Octave:").grid(row=3,column=0,padx=10,pady=5)
@@ -215,7 +219,6 @@ class MidiApp:
             self.y[a] = self.y_step.get()
             self.z[a] = self.z_step.get()
             self.st = self.split.get()
-            self.sc = self.split_criterion.get()
 
     def recall_layer(self):
         if self.layer.get() == 'Main Layer':
@@ -228,7 +231,6 @@ class MidiApp:
         self.y_step.set(self.y[a])
         self.z_step.set(self.z[a])
         self.split.set(self.st)
-        self.split_criterion.set(self.sc)
         self.recall = 0
         
 
@@ -236,10 +238,10 @@ class MidiApp:
         self.ax.clear()
         self.update_layer()
         start_note = [note_names.index(self.note[0]) + 12 * (self.octave[0]+1),note_names.index(self.note[1]) + 12 * (self.octave[1]+1)]
-        if self.split.get() == "Vertical":
-            self.notes = layout_vertical(start_note, self.x, self.y, self.z, [int(k) for k in str(self.split_criterion.get())])
-        elif self.split.get() == "Horizontal":
-            self.notes = layout_horizontal(start_note, self.x, self.y, self.z, self.split_criterion.get())
+        if self.split.get()[3] == "r":
+            self.notes = layout_vertical(start_note, self.x, self.y, self.z, [int(x) for x in self.split.get()[-2:]])
+        elif self.split.get()[3] == "c":
+            self.notes = layout_horizontal(start_note, self.x, self.y, self.z, int(self.split.get()[-1]))
         else: 
             self.notes = layout_horizontal(start_note, self.x, self.y, self.z, 13)
         self.colours = note_colours(self.notes, axis_cs)
@@ -284,19 +286,9 @@ class MidiApp:
         else:
             self.split_combos = []
             self.split_combos.append(ttk.Label(self.root, text="Split Type:"))
-            self.split_combos.append(ttk.Combobox(self.root, textvariable=self.split, values=self.split_types, postcommand = self.update_layer))
-            self.split_combos.append(ttk.Label(self.root, text="Split Criterion:"))
-            self.split_combos.append(ttk.Combobox(self.root, textvariable=self.split_criterion, values=[0], postcommand=self.update_split))
-            self.split_criterion.trace('w',self.generate_image)
+            self.split_combos.append(ttk.Combobox(self.root, textvariable=self.split, values=self.split_types))
+            self.split.trace('w',self.generate_image)
             [self.split_combos[x].grid(row=1+x//2,column=2+(x % 2),padx=10,pady=5) for x in range(len(self.split_combos))]
-    
-    def update_split(self):
-            if self.split.get() == "Horizontal":
-                self.split_combos[3]["values"] = list(range(3,10,2))
-            elif self.split.get() == "Vertical":    
-                self.split_combos[3]["values"] = [32,23,22]
-            else:
-                self.split_combos[3]["values"] = [0]
             
 
 if __name__ == "__main__":
